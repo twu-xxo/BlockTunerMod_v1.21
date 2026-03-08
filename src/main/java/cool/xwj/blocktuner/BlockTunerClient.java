@@ -23,12 +23,18 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.NoteBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 
 @Environment(EnvType.CLIENT)
 public class BlockTunerClient implements ClientModInitializer {
@@ -37,8 +43,9 @@ public class BlockTunerClient implements ClientModInitializer {
     public void onInitializeClient() {
         BlockTunerConfig.load();
         MidiManager.getMidiManager().refreshMidiDevice();
+        
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (BlockTunerConfig.onBlockTunerServer
+            if (BlockTunerConfig.onBlockTunerServer 
                     && Screen.hasControlDown()
                     && !player.isSpectator()
                     && !player.isSneaking()
@@ -54,5 +61,27 @@ public class BlockTunerClient implements ClientModInitializer {
         // knowing a BlockTuner server
         ClientPlayNetworking.registerGlobalReceiver(ProtocolCheckS2CPacket.ID, ProtocolCheckS2CPacket::receive);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> BlockTunerConfig.onBlockTunerServer = false);
+    }
+
+    public static void render(DrawContext context) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.player == null) return;
+        if (!Screen.hasControlDown()) return;
+
+        HitResult hit = client.crosshairTarget;
+        if (hit != null && hit.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult blockHit = (BlockHitResult) hit;
+            BlockPos pos = blockHit.getBlockPos();
+            BlockState state = client.world.getBlockState(pos);
+
+            if (state.getBlock() instanceof NoteBlock) {
+                int note = state.get(NoteBlock.NOTE);
+                String text = String.valueOf(note);
+                
+                int width = client.getWindow().getScaledWidth();
+                int height = client.getWindow().getScaledHeight();
+                context.drawText(client.textRenderer, text, (width / 2) + 10, (height / 2) - 5, 0xFFFFFF, false);
+            }
+        }
     }
 }

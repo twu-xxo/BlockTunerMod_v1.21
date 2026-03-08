@@ -37,7 +37,7 @@ public class BlockTuner implements ModInitializer {
     public static final int TUNING_PROTOCOL = 2;
 
     public static Identifier identifier(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.of(MOD_ID, path);
     }
 
     @Override

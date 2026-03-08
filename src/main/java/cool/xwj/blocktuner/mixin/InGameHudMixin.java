@@ -17,12 +17,10 @@
 
 package cool.xwj.blocktuner.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import cool.xwj.blocktuner.NoteNameHud;
-import net.minecraft.client.MinecraftClient;
+import cool.xwj.blocktuner.BlockTunerClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -31,10 +29,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
 
-
     @Inject(method = "render", at = @At("TAIL"))
-    private void renderNoteNameHud(DrawContext context, float tickDelta, CallbackInfo ci) {
-        NoteNameHud.render(context);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    private void renderNoteNameHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        BlockTunerClient.render(context);
     }
 }

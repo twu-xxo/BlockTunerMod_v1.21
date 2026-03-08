@@ -53,13 +53,13 @@ public class NoteBlockMixinClient extends Block {
 
     @Unique
     private static void copyBlockState(BlockState state, ItemStack stack) {
-        stack.set(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT.with(NoteBlock.NOTE, state));
+        stack.set(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT.with(NoteBlock.NOTE, state.get(NoteBlock.NOTE)));
     }
 
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (placer!= null && client != null && placer == client.player && Screen.hasControlDown()) {
+        if (placer != null && client != null && placer == client.player && Screen.hasControlDown()) {
             client.execute(() -> client.setScreen(new TuningScreen(Text.empty(), pos)));
         }
         super.onPlaced(world, pos, state, placer, itemStack);

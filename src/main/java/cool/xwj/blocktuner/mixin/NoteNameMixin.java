@@ -18,8 +18,11 @@
 package cool.xwj.blocktuner.mixin;
 
 import cool.xwj.blocktuner.NoteNames;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.*;
@@ -39,10 +42,19 @@ public class NoteNameMixin {
     @Inject(method = "getName", at = @At("HEAD"), cancellable = true)
     private void getNoteName(CallbackInfoReturnable<Text> cir){
         ItemStack itemStack = (ItemStack)(Object)this;
-        if (itemStack.getItem() == Items.NOTE_BLOCK && itemStack.get(DataComponentTypes.BLOCK_STATE) != null) {
-            int note = itemStack.get(DataComponentTypes.BLOCK_STATE).getValue(NoteBlock.NOTE);
-            cir.setReturnValue(MutableText.of(new TranslatableTextContent(((ItemStack)(Object)this).getTranslationKey(), null, null))
-                    .append(MutableText.of(new PlainTextContent.Literal(" (" + NoteNames.get(note) + ", "+ note + ")")).setStyle(NOTE_STYLE)));
+        
+        if (itemStack.getItem() == Items.NOTE_BLOCK) {
+            BlockStateComponent stateComponent = itemStack.get(DataComponentTypes.BLOCK_STATE);
+            
+            if (stateComponent != null) {
+                BlockState dummyState = stateComponent.applyToState(Blocks.NOTE_BLOCK.getDefaultState());
+                int note = dummyState.get(NoteBlock.NOTE);
+                
+                MutableText customName = Text.translatable(itemStack.getTranslationKey())
+                        .append(Text.literal(" (" + NoteNames.get(note) + ", " + note + ")").setStyle(NOTE_STYLE));
+                
+                cir.setReturnValue(customName);
+            }
         }
     }
 }

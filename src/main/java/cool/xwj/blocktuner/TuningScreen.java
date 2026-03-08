@@ -17,7 +17,13 @@
 
 package cool.xwj.blocktuner;
 
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiMessage;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
+
 import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -32,11 +38,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
 
 @Environment(EnvType.CLIENT)
 public class TuningScreen extends Screen {
@@ -60,7 +61,7 @@ public class TuningScreen extends Screen {
     protected static final Text MIDI_DEVICE_REFRESH_TOOLTIP = Text.translatable("settings.blocktuner.refresh");
 
 
-    static final Identifier TEXTURE = new Identifier("blocktuner", "textures/gui/container/tune.png");
+    static final Identifier TEXTURE = Identifier.of("blocktuner", "textures/gui/container/tune.png");
 
     public TuningScreen(Text title, BlockPos pos) {
         super(title);
@@ -600,7 +601,9 @@ public class TuningScreen extends Screen {
 
     public static void sendTuningPacket(BlockPos pos, int note) {
         note = MathHelper.clamp(note, 0, 24);
-        ClientPlayNetworking.send(new TuningC2SPacket(pos, note));
+        if (ClientPlayNetworking.canSend(TuningC2SPacket.ID)) {
+            ClientPlayNetworking.send(new TuningC2SPacket(pos, note));
+        }
     }
 
     protected static int keyToNote(int scanCode) {

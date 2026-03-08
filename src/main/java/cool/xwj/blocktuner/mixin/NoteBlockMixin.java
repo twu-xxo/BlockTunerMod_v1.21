@@ -39,20 +39,17 @@ public class NoteBlockMixin extends Block {
     }
 
     // runs on server side while player trying to tune note blocks
-    @Inject(method = "onUse",
+@Inject(method = "onUse",
             cancellable = true,
             at = @At(value = "INVOKE",
                     shift = At.Shift.BEFORE,
                     target = "Lnet/minecraft/block/BlockState;cycle(Lnet/minecraft/state/property/Property;)Ljava/lang/Object;"))
     private void onTune(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir){
-
-        // allows playing with right clicks while holding blaze rods
         if (player.getMainHandStack().getItem() == Items.BLAZE_ROD) {
-
             if (world.getBlockState(pos.up()).isAir()) {
                 world.addSyncedBlockEvent(pos, (NoteBlock) (Object) this, 0, 0);
             }
-            cir.setReturnValue(ActionResult.CONSUME);
+            cir.setReturnValue(ActionResult.SUCCESS);
         }
     }
 }
